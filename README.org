@@ -1,0 +1,60 @@
+* GameScreen.js
+
+HTML上でゲーム等の画面領域を作成するためのJavaScriptライブラリです。
+
+ゲーム等のコンテンツをWebページに埋め込むときの外枠を作成します。
+コンテンツをウィンドウ内最大化や全画面化するUIを提供します。
+
+特徴:
+
+- 三つの画面モード:
+  - ページ埋め込み (GameScreen.SCREEN_NORMAL)
+  - ウィンドウ内最大化 (GameScreen.SCREEN_MAXIMIZED)
+  - 全画面化 (GameScreen.SCREEN_FULLSCREEN)
+- 下部のコントロールバー
+  - 画面モード切替ボタン
+  - その他メニュー等に活用可能
+- 内容領域(contentArea)のwidth,height制御
+  - 指定サイズに固定(contentArea.style.transformで調整)
+  - 指定サイズの縦横比に固定(screenAreaの縦横どちらかに合わせる)
+  - screenAreaに合わせる
+
+
+想定するHTMLの構造:
+
+- html
+  - meta (最大化、全画面化時にviewportを制御してユーザースケーリングを禁止)
+  - body (最大化時にスクロールバーを非表示(body.style.overflow="hidden"))
+    - ...
+      - div.gamescreen-screenarea
+        - div.gamescreen-contentarea
+        - div.gamescreen-controlbar
+      - ...
+      - div.gamescreen-screenarea
+        - div.gamescreen-contentarea
+        - div.gamescreen-controlbar
+      - ...
+
+** gamescreen.js
+*** class misohena.GameScreen
+**** function GameScreen(originalWidth, originalHeight)
+**** function getElement():HTMLElement
+**** function getElementContentArea():HTMLElement
+**** function getElementControlBar():HTMLElement
+**** function getControlBar():misohena.GameScreen.ControlBar
+**** function setMaximizeInWindow(b):void
+**** function setFullscreenMode(b):void
+**** function getFullscreenMode():boolean
+**** function isFullscreenAvailable():boolean
+**** function getLastScreenState():number
+*** class misohena.GameScreen.ControlBar
+**** function getElement():HTMLElement
+**** function add(ctrl:HTMLElement, leftOrRight:string):HTMLElement
+**** function addButton(leftOrRight:string):misohena.GameScreen.ControlBarButton
+**** function setAutoHideMode(b:boolean)
+*** class misohena.GameScreen.ControlBarButton extends HTMLElement
+**** function setDisabled(b:boolean):ControlBarButton
+**** function setIcon(url:string, urlW:number, urlH:number, iconX:number, iconY:number, iconW:number, iconH:number)
+**** function setOnClick(onClick)
+**** function setText(text:string)
+*** class misohena.GameScreen.ScreenModeControl

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="default.css" />
+
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+
+    <title>GameBoot.js Example</title>
+    <script src="gameboot.js"></script>
+  </head>
+  <body>
+    <h1>GameBoot.js Example</h1>
+    <p>Example1</p>
+    <div style="border: solid 1px black; width: 640px; height: 480px;" onclick="misohena.GameBoot.loadAndReplace(this, ['gamescreen.js', 'example.js'], function(){return misohena.GameScreen.wrap(misohena.ExampleGame.create(), 640, 480).getElement();});">
+      <img src="example.jpg" />
+    </div>
+
+    <p>Example2</p>
+    <div style="border: solid 1px black; width: 640px; height: 480px;">
+      <img src="example.jpg" />
+      <script>misohena.GameBoot.writePlayButton(['gamescreen.js', 'example.js'], function(){return misohena.GameScreen.wrap(misohena.ExampleGame.create(), 640, 480).getElement();})</script>
+    </div>
+
+    <hr />
+    <address>AKIYAMA Kouhei</address>
+    <div><!-- ts start -->Last modified: 2014-10-15 13:42:48+0900<!-- ts end --></div>
+  </body>
+</html>
