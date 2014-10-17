@@ -12,6 +12,11 @@ gameboot.js‚Ægamescreen.js‚ÍƒQ[ƒ€“™‚ÌƒRƒ“ƒeƒ“ƒc‚ğwebƒy[ƒW‚É–„‚ß‚Ş‚½‚ß‚ÌJavaS
 
 –{ƒ‰ƒCƒuƒ‰ƒŠ‚Í‚±‚ê‚ç‚Ì–â‘è‚ğ‰ğŒˆ‚µ‚Ü‚·B
 
+* “®ì—á
+
+- [[http://misohena.github.io/js_gamescreen/example.html]]
+- [[http://misohena.github.io/js_gamescreen/example2.html]]
+
 * gameboot.js
 ** gameboot.js‚Ì“Á’¥
 
@@ -54,7 +59,7 @@ misohena.GameBoot.writePlayButton‚É‚æ‚Á‚ÄA‰æ‘œ‚Ì^‚ñ’†‚ÉƒvƒŒƒCƒ{ƒ^ƒ“‚ª”z’u‚³‚ê‚
     </div>
 #+END_SRC
 
-“®ì—á: [[file:example.html]]
+“®ì—á: [[http://misohena.github.io/js_gamescreen/example.html]]
 
 * gamescreen.js
 
@@ -122,7 +127,7 @@ gamescreen.js‚ÍƒQ[ƒ€“™‚ÌƒRƒ“ƒeƒ“ƒc‚ÌuŠO˜gv‚Æ‚È‚èA‰º•”ƒƒjƒ…[ƒo[‚â‰æ–ÊƒTƒCƒ
 </html>
 #+END_SRC
 
-“®ì—á: [[file:example2.html]]
+“®ì—á: [[http://misohena.github.io/js_gamescreen/example2.html]]
 
 ** gamescreen.js‚ÌƒCƒ“ƒ^ƒtƒF[ƒX
 *** class misohena.GameScreen
