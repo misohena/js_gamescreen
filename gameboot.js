@@ -237,7 +237,10 @@
         button.style.background = "white";
         button.style.margin = "-"+BTN_H/2+"px 0 0 -"+BTN_W/2+"px";
         button.style.borderRadius = "16px";
-        button.style.userSelect = "none";
+        button.style.userSelect =
+            button.style.msUserSelect =
+            button.style.MozUserSelect =
+            button.style.webkitUserSelect = "none";
         button.style.cursor = "default";
         button.style.textAlign = "center";
         button.appendChild(document.createTextNode("\u25b6"));
