@@ -1,3 +1,6 @@
+// gamescreen.js
+// Copyright (c) 2014 AKIYAMA Kouhei
+// This software is released under the MIT License.
 
 (function(global){
     if(!global.misohena){global.misohena = {};}
