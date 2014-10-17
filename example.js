@@ -3,8 +3,10 @@
     var mypkg = global.misohena;
 
     mypkg.GameScreenExampleGame = {};
-    mypkg.GameScreenExampleGame.create = function()
+    mypkg.GameScreenExampleGame.create = function(resourceDir)
     {
+        if(!resourceDir){ resourceDir = "";}
+
         var div = document.createElement("div");
         div.width = "640px";
         div.height = "480px";
@@ -16,7 +18,7 @@
         var img = document.createElement("img");
         img.setAttribute("width", 640);
         img.setAttribute("height", 480);
-        img.setAttribute("src", "example.jpg");
+        img.setAttribute("src", resourceDir + "example.jpg");
         img.setAttribute("alt", "forest");
         img.style.position = "absolute";
         img.style.left = "0";
