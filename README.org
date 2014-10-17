@@ -170,7 +170,7 @@ gamescreen.js‚ÍƒQ[ƒ€“™‚ÌƒRƒ“ƒeƒ“ƒc‚ÌuŠO˜gv‚Æ‚È‚èA‰º•”ƒƒjƒ…[ƒo[‚â‰æ–ÊƒTƒCƒ
 *** class misohena.GameScreen.ScreenModeControl
 
 
-* Q&amp;A
+* Q&A
 ** ƒhƒLƒ…ƒƒ“ƒg‚Ì‚‚³‚ªƒEƒBƒ“ƒhƒE‚æ‚è¬‚³‚¢‚Æ‚«‚ÉƒEƒBƒ“ƒhƒE“àÅ‘å‰»‚·‚é‚ÆƒEƒBƒ“ƒhƒE‚Ì‚‚³ˆê”t‚ÉL‚ª‚ç‚È‚¢
 
 Œã•ûŒİŠ·ƒ‚[ƒh‚¾‚Æ =document.documentElement.clientHeight= ‚ªƒEƒBƒ“ƒhƒE‚Ì‚‚³‚Å‚Í–³‚­ƒhƒLƒ…ƒƒ“ƒg‚Ì‚‚³‚ğ•Ô‚µ‚Ä‚µ‚Ü‚¤‚±‚Æ‚ªŒ´ˆö‚Ì‰Â”\«‚ª‚ ‚è‚Ü‚·B
