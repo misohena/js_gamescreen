@@ -13,6 +13,9 @@
         div.style.position = "relative";
         div.style.left = "0";
         div.style.top = "0";
+        div.style.padding = "0";
+        div.style.margin = "0";
+        div.style.border = "none";
         div.tabIndex = "0";
 
         var img = document.createElement("img");
@@ -23,6 +26,8 @@
         img.style.position = "absolute";
         img.style.left = "0";
         img.style.top = "0";
+        img.style.border = "none";
+        img.style.margin = "0";
         div.appendChild(img);
 
         var canvas = document.createElement("canvas");
