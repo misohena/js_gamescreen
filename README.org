@@ -106,6 +106,7 @@ gamescreen.js‚ÍƒQ[ƒ€“™‚ÌƒRƒ“ƒeƒ“ƒc‚ÌuŠO˜gv‚Æ‚È‚èA‰º•”ƒƒjƒ…[ƒo[‚â‰æ–ÊƒTƒCƒ
 ** g—p—á
 
 #+BEGIN_SRC html
+<!DOCTYPE html>
 <html>
   <head>
     <script src="gamescreen.js"></script>
@@ -167,3 +168,10 @@ gamescreen.js‚ÍƒQ[ƒ€“™‚ÌƒRƒ“ƒeƒ“ƒc‚ÌuŠO˜gv‚Æ‚È‚èA‰º•”ƒƒjƒ…[ƒo[‚â‰æ–ÊƒTƒCƒ
 - setOnClick(onClick)
 - setText(text:string)
 *** class misohena.GameScreen.ScreenModeControl
+
+
+* Q&amp;A
+** ƒhƒLƒ…ƒƒ“ƒg‚Ì‚‚³‚ªƒEƒBƒ“ƒhƒE‚æ‚è¬‚³‚¢‚Æ‚«‚ÉƒEƒBƒ“ƒhƒE“àÅ‘å‰»‚·‚é‚ÆƒEƒBƒ“ƒhƒE‚Ì‚‚³ˆê”t‚ÉL‚ª‚ç‚È‚¢
+
+Œã•ûŒİŠ·ƒ‚[ƒh‚¾‚Æ =document.documentElement.clientHeight= ‚ªƒEƒBƒ“ƒhƒE‚Ì‚‚³‚Å‚Í–³‚­ƒhƒLƒ…ƒƒ“ƒg‚Ì‚‚³‚ğ•Ô‚µ‚Ä‚µ‚Ü‚¤‚±‚Æ‚ªŒ´ˆö‚Ì‰Â”\«‚ª‚ ‚è‚Ü‚·B
+htmlƒtƒ@ƒCƒ‹‚Ìæ“ª‚É =<!DOCTYPE html>= ‚Æ‹Lq‚µ‚Ä•W€ƒ‚[ƒh‚É‚È‚é‚æ‚¤‚É‚µ‚Ä‚İ‚Ä‚­‚¾‚³‚¢B
