@@ -1,11 +1,66 @@
-* GameScreen.js
+* gameboot.js & gamescreen.js
 
-HTML上でゲーム等の画面領域を作成するためのJavaScriptライブラリです。
+gameboot.jsとgamescreen.jsはゲーム等のコンテンツをwebページに埋め込むためのJavaScriptライブラリです。
 
-ゲーム等のコンテンツをWebページに埋め込むときの外枠を作成します。
-コンテンツをウィンドウ内最大化や全画面化するUIを提供します。
+コンテンツをwebページ(html)に埋め込む際、次のようなことが問題になります。
 
-特徴:
+- プレビュー画像の上にプレイ(再生開始)ボタンを配置したい
+- スクリプトを遅延読み込みしたい(プレイボタンが押された後に読み込みたい)
+- スクリプトが読み込み終わった後、プレビュー画像を実際のコンテンツに差し替えたい
+- コンテンツをウィンドウ内で最大化したり、全画面化させたりしたい
+- コンテンツ下部にメニューバーを表示したい
+
+本ライブラリはこれらの問題を解決します。
+
+* gameboot.js
+** gameboot.jsの特徴
+
+- プレイボタンの生成・配置
+- プレイボタンが押されてからのスクリプトの遅延読み込み
+- スクリプト読み込み待ちアニメーションの表示
+- スクリプトが読み込まれてからのプレビュー要素とコンテンツ要素との差し替え
+
+** gameboot.jsの使用例
+
+次のhtmlはプレビュー画像(あらかじめ作成しておく)の上にプレイボタンを配置する例です。
+
+#+BEGIN_SRC html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="gameboot.js"></script>
+  </head>
+  <body>
+    <p>Example1</p>
+    <div style="border: solid 1px black; width: 640px; height: 480px;">
+      <img src="ExampleGamePreview.jpg" />
+      <script>misohena.GameBoot.writePlayButton(['examplegame.js'], function(){return ExampleGame.create();})</script>
+    </div>
+  </body>
+</html>
+#+END_SRC
+
+misohena.GameBoot.writePlayButtonによって、画像の真ん中にプレイボタンが配置されます。
+ボタンが押されるとexamplegame.jsを読み込み始め、簡単な読み込み待ちアニメーションを表示し、読み込みが完了するとExampleGame.create()を実行して、その結果返されたHTML要素をscript要素の親div要素と入れ替えます。
+=['examplegame.js']= の部分は一つだけなら単に文字列で指定しても構いません。
+配列を使って複数のスクリプトを指定した場合は、その全てが読み込み終わってから次の処理を始めます。
+
+プレイボタンが既に画像に含まれている場合は次のようにします。
+
+#+BEGIN_SRC html
+    <p>Example2</p>
+    <div style="border: solid 1px black; width: 640px; height: 480px;" onclick="misohena.GameBoot.loadAndReplace(this, ['examplegame.js'], function(){return ExampleGame.create();});">
+      <img src="ExampleGamePreview.jpg" />
+    </div>
+#+END_SRC
+
+動作例: [[file:example.html]]
+
+* gamescreen.js
+
+gamescreen.jsはゲーム等のコンテンツの「外枠」となり、下部メニューバーや画面サイズの制御機能を実現します。
+
+** gamescreen.jsの特徴
 
 - 三つの画面モード:
   - ページ埋め込み (GameScreen.SCREEN_NORMAL)
@@ -20,7 +75,7 @@ HTML上でゲーム等の画面領域を作成するためのJavaScriptライブラリです。
   - screenAreaに合わせる
 
 
-想定するHTMLの構造:
+** gamescreen.jsが想定するHTMLの構造
 
 - html
   - meta (最大化、全画面化時にviewportを制御してユーザースケーリングを禁止)
@@ -35,26 +90,61 @@ HTML上でゲーム等の画面領域を作成するためのJavaScriptライブラリです。
         - div.gamescreen-controlbar
       - ...
 
-** gamescreen.js
+** 使用例
+
+#+BEGIN_SRC html
+<html>
+  <head>
+    <script src="gamescreen.js"></script>
+  </head>
+  <body>
+    <script>
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("width", "640");
+      canvas.setAttribute("height", "480");
+      var ctx = canvas.getContext("2d");
+      var x = 0;
+      var y = 0;
+      setInterval(function(){
+        ctx.fillStyle = "green";
+        ctx.fillRect(0,0,640,480);
+        ctx.fillStyle = "red";
+        ctx.fillRect(x, y, 20, 20);
+        x += 10;
+        if(x > 640-20){ x = 0;}
+        y += 10;
+        if(y > 480-20){ y = 0;}
+      }, 20);
+
+      document.body.appendChild(misohena.GameScreen.wrap(canvas, 640, 480).getElement());
+    </script>
+  </body>
+</html>
+#+END_SRC
+
+動作例: [[file:example2.html]]
+
+** gamescreen.jsのインタフェース
 *** class misohena.GameScreen
-**** function GameScreen(originalWidth, originalHeight)
-**** function getElement():HTMLElement
-**** function getElementContentArea():HTMLElement
-**** function getElementControlBar():HTMLElement
-**** function getControlBar():misohena.GameScreen.ControlBar
-**** function setMaximizeInWindow(b):void
-**** function setFullscreenMode(b):void
-**** function getFullscreenMode():boolean
-**** function isFullscreenAvailable():boolean
-**** function getLastScreenState():number
+- GameScreen(originalWidth, originalHeight)
+- getElement():HTMLElement
+- getElementContentArea():HTMLElement
+- getElementControlBar():HTMLElement
+- getControlBar():misohena.GameScreen.ControlBar
+- setMaximizeInWindow(b):void
+- setFullscreenMode(b):void
+- getFullscreenMode():boolean
+- isFullscreenAvailable():boolean
+- getLastScreenState():number
+- static wrap(content, originalWidth, originalHeight):misohena.GameScreen
 *** class misohena.GameScreen.ControlBar
-**** function getElement():HTMLElement
-**** function add(ctrl:HTMLElement, leftOrRight:string):HTMLElement
-**** function addButton(leftOrRight:string):misohena.GameScreen.ControlBarButton
-**** function setAutoHideMode(b:boolean)
+- getElement():HTMLElement
+- add(ctrl:HTMLElement, leftOrRight:string):HTMLElement
+- addButton(leftOrRight:string):misohena.GameScreen.ControlBarButton
+- setAutoHideMode(b:boolean)
 *** class misohena.GameScreen.ControlBarButton extends HTMLElement
-**** function setDisabled(b:boolean):ControlBarButton
-**** function setIcon(url:string, urlW:number, urlH:number, iconX:number, iconY:number, iconW:number, iconH:number)
-**** function setOnClick(onClick)
-**** function setText(text:string)
+- setDisabled(b:boolean):ControlBarButton
+- setIcon(url:string, urlW:number, urlH:number, iconX:number, iconY:number, iconW:number, iconH:number)
+- setOnClick(onClick)
+- setText(text:string)
 *** class misohena.GameScreen.ScreenModeControl
