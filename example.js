@@ -175,20 +175,37 @@
         var keyLeft = false;
         var keyRight = false;
         var keyShoot = false;
-        div.addEventListener("keydown", function(e){
+        function onKeyDown(e){
             switch(e.keyCode){
-            case 37: keyLeft = true; break;
-            case 39: keyRight = true; break;
+            case 37: keyLeft = true; return true;
+            case 39: keyRight = true; return true;
             case 90: //Z
             case 32:  //space
                 keyShoot = true;
-                break;
+                return true;
+            }
+            return false;
+        }
+        function onKeyUp(e){
+            switch(e.keyCode){
+            case 37: keyLeft = false; return true;
+            case 39: keyRight = false; return true;
+            case 90: //Z
+            case 32:  //space
+                return true;
+            }
+            return false;
+        }
+        div.addEventListener("keydown", function(e){
+            if(onKeyDown(e)){
+                e.stopPropagation();
+                e.preventDefault();
             }
         }, false);
         div.addEventListener("keyup", function(e){
-            switch(e.keyCode){
-            case 37: keyLeft = false; break;
-            case 39: keyRight = false; break;
+            if(onKeyUp(e)){
+                e.stopPropagation();
+                e.preventDefault();
             }
         }, false);
 
