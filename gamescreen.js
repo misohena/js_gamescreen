@@ -169,6 +169,8 @@
 
         function onResize()
         {
+            updateViewportMetaElement();
+
             if(getFullscreenMode()){
                 setStyleFullscreen();
                 setLastScreenState(SCREEN_FULLSCREEN);
@@ -183,7 +185,6 @@
                     setLastScreenState(SCREEN_NORMAL);
                 }
             }
-            updateViewportMetaElement();
         }
 
         // Maximize methods
