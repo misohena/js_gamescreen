@@ -28,6 +28,7 @@
         img.style.top = "0";
         img.style.border = "none";
         img.style.margin = "0";
+        img.style.padding = "0";
         div.appendChild(img);
 
         var canvas = document.createElement("canvas");
