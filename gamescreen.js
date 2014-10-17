@@ -315,8 +315,6 @@
 
         /**
          * viewportメタ要素を更新します。
-         * 表示領域の高さに合わせた方が良いときは「height=SEC指定の画面高さ」を、
-         * そうでないときは「width=SEC指定の画面幅」を設定します。
          */
         function updateViewportMetaElement()
         {
