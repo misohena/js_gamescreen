@@ -186,13 +186,33 @@
 
         var loadingMark = addLoadingMarkTo(previewElement);
 
+        function findFirstFocusable(elem){
+            if(elem.tabIndex >= 0){
+                return elem;
+            }
+            for(var i = 0; i < elem.childNodes.length; ++i){
+                var focusableDescendant = findFirstFocusable(elem.childNodes[i]);
+                if(focusableDescendant){
+                    return focusableDescendant;
+                }
+            }
+            return null;
+        }
+        function focusFirstFocusable(elem){
+            var focusableElem = findFirstFocusable(elem);
+            if(focusableElem){
+                focusableElem.focus();
+            }
+        }
         function replaceElement(oldElem, newElem){
             oldElem.parentNode.insertBefore(newElem, oldElem);
             oldElem.parentNode.removeChild(oldElem);
         }
         function onLoad(){
             loadingMark.stop();
-            replaceElement(previewElement, creator());
+            var newElement = creator();
+            replaceElement(previewElement, newElement);
+            focusFirstFocusable(newElement);
         }
         function onError(){
             loadingMark.stop();
