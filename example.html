@@ -12,18 +12,18 @@
   <body>
     <h1>GameBoot.js Example</h1>
     <p>Example1</p>
-    <div style="border: solid 1px black; width: 640px; height: 480px;" onclick="misohena.GameBoot.loadAndReplace(this, ['gamescreen.js', 'example.js'], function(){return misohena.GameScreen.wrap(misohena.ExampleGame.create(), 640, 480).getElement();});">
+    <div style="border: solid 1px black; width: 640px; height: 480px;" onclick="misohena.GameBoot.loadAndReplace(this, ['gamescreen.js', 'example.js'], function(){return misohena.GameScreen.wrap(misohena.GameScreenExampleGame.create(), 640, 480).getElement();});">
       <img src="example.jpg" />
     </div>
 
     <p>Example2</p>
     <div style="border: solid 1px black; width: 640px; height: 480px;">
       <img src="example.jpg" />
-      <script>misohena.GameBoot.writePlayButton(['gamescreen.js', 'example.js'], function(){return misohena.GameScreen.wrap(misohena.ExampleGame.create(), 640, 480).getElement();})</script>
+      <script>misohena.GameBoot.writePlayButton(['gamescreen.js', 'example.js'], function(){return misohena.GameScreen.wrap(misohena.GameScreenExampleGame.create(), 640, 480).getElement();})</script>
     </div>
 
     <hr />
     <address>AKIYAMA Kouhei</address>
-    <div><!-- ts start -->Last modified: 2014-10-15 13:42:48+0900<!-- ts end --></div>
+    <div><!-- ts start -->Last modified: 2014-10-17 13:46:10+0900<!-- ts end --></div>
   </body>
 </html>

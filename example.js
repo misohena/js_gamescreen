@@ -2,8 +2,8 @@
     if(!global.misohena){global.misohena = {};}
     var mypkg = global.misohena;
 
-    mypkg.ExampleGame = {};
-    mypkg.ExampleGame.create = function()
+    mypkg.GameScreenExampleGame = {};
+    mypkg.GameScreenExampleGame.create = function()
     {
         var img = document.createElement("img");
         img.setAttribute("width", 640);
