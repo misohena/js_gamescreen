@@ -39,7 +39,11 @@ gameboot.js‚Ægamescreen.js‚ÍƒQ[ƒ€“™‚ÌƒRƒ“ƒeƒ“ƒc‚ğwebƒy[ƒW‚É–„‚ß‚Ş‚½‚ß‚ÌJavaS
     <p>Example1</p>
     <div style="border: solid 1px black; width: 640px; height: 480px;">
       <img src="ExampleGamePreview.jpg" />
-      <script>misohena.GameBoot.writePlayButton(['examplegame.js'], function(){return ExampleGame.create();})</script>
+      <script>
+        misohena.GameBoot.writePlayButton(['examplegame.js'],
+          function(){return ExampleGame.create();
+        });
+      </script>
     </div>
   </body>
 </html>
@@ -54,7 +58,11 @@ misohena.GameBoot.writePlayButton‚É‚æ‚Á‚ÄA‰æ‘œ‚Ì^‚ñ’†‚ÉƒvƒŒƒCƒ{ƒ^ƒ“‚ª”z’u‚³‚ê‚
 
 #+BEGIN_SRC html
     <p>Example2</p>
-    <div style="border: solid 1px black; width: 640px; height: 480px;" onclick="misohena.GameBoot.loadAndReplace(this, ['examplegame.js'], function(){return ExampleGame.create();});">
+    <div style="border: solid 1px black; width: 640px; height: 480px;"
+         onclick="misohena.GameBoot.loadAndReplace(
+                    this,
+                    ['examplegame.js'],
+                    function(){return ExampleGame.create();});">
       <img src="ExampleGamePreview.jpg" />
     </div>
 #+END_SRC
