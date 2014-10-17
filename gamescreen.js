@@ -89,8 +89,8 @@
         {
             document.body.style.overflow = "hidden"; //hide body scrollbar
 
-            var clientWidth = document.documentElement.clientWidth;
-            var clientHeight = document.documentElement.clientHeight;
+            var clientWidth = window.innerWidth || document.documentElement.clientWidth;
+            var clientHeight = window.innerHeight || document.documentElement.clientHeight;
 
             screenArea.style.display = "block";
             screenArea.style.position = "fixed";
