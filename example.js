@@ -40,9 +40,9 @@
         div.appendChild(canvas);
         var ctx = canvas.getContext("2d");
 
-        var playerX = 320;
-        var playerY = 400;
         var PLAYER_W = 60;
+        var playerX = 640/2-PLAYER_W/2 ;
+        var playerY = 400;
         function drawPlayer()
         {
             ctx.fillStyle = "yellow";
@@ -53,11 +53,11 @@
         {
             if(keyLeft){ playerX -= 10;}
             if(keyRight){ playerX += 10;}
-            if(playerX+PLAYER_W > 640){
-                playerX = 0;
+            if(playerX >= 640){
+                playerX = -PLAYER_W+1;
             }
-            if(playerX < 0){
-                playerX = 640-PLAYER_W;
+            if(playerX+PLAYER_W <= 0){
+                playerX = 640-1;
             }
             if(keyShoot){
                 keyShoot = false;
