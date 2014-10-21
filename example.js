@@ -59,6 +59,11 @@
                 ctx.fillStyle = "yellow";
                 ctx.fillRect(x+0,y+20,60,20);
                 ctx.fillRect(x+20,y+0,20,20);
+                ctx.fillStyle = "black";
+                ctx.font = "bold 20px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "top";
+                ctx.fillText(playerLife, x+PLAYER_W/2, y+20);
             };
             this.step = function(){
                 if(keyLeft){ vx -= ACC_X;}
@@ -82,13 +87,14 @@
         }
         var playerLife = 100;
         var PLAYER_DAMAGE_TIME_MAX = 10;
-        function addPlayerDamage(amount)
+        function addPlayerDamage(amount, x, y)
         {
             playerDamageTime = PLAYER_DAMAGE_TIME_MAX;
             playerLife -= amount;
             if(playerLife <= 0){
                 playerLife = 0;
             }
+            effects.push(new EffectText("-" + amount, x, y, 30));
         }
         var playerDamageTime = 0;
         function stepPlayerDamage()
@@ -146,6 +152,7 @@
         var enemies = [];
         var ENEMY_W = 40;
         var ENEMY_H = 20;
+        var GROUND_Y = 440;
         function Enemy()
         {
             var self = this;
@@ -164,12 +171,12 @@
                     return false;
                 }
                 y += 3;
-                if(y > 480){
-                    addPlayerDamage(5);
+                if(y > GROUND_Y){
+                    addPlayerDamage(5, x, y);
                     return false;
                 }
                 if(intersectsObject(self, player)){
-                    addPlayerDamage(20);
+                    addPlayerDamage(20, x, y);
                     return false;
                 }
                 return true;
@@ -189,6 +196,57 @@
             stepObjects(enemies);
         }
 
+
+        //
+        // EffectObject
+        //
+        var effects = [];
+        function EffectText(text, x, y, lifetime, setupStyle)
+        {
+            var vy = -2;
+            if(!setupStyle){
+                setupStyle = function(ctx){
+                    ctx.fillStyle = "red";
+                    ctx.font = "bold 20px sans-serif";
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "top";
+                };
+            }
+            this.getX = function(){ return x;};
+            this.getY = function(){ return y;};
+            this.getW = function(){ return 0;};
+            this.getH = function(){ return 0;};
+            this.step = function(){
+                if(--lifetime <= 0){
+                    return false;
+                }
+
+                vy += 0.08;
+                if(vy > 0){
+                    vy = 0;
+                }
+                y += vy;
+
+                return true;
+            };
+            this.draw = function(ctx){
+                setupStyle(ctx);
+                ctx.fillText(text, x, y);
+            };
+        }
+        function stepEffects()
+        {
+            stepObjects(effects);
+        }
+        function drawEffects()
+        {
+            drawObjects(effects);
+        }
+
+
+        //
+        // GameObject
+        //
 
         function drawObjects(objectArray)
         {
@@ -354,12 +412,14 @@
 
             stepEnemies();
             stepBullets();
+            stepEffects();
             stepPlayerDamage();
 
             ctx.clearRect(0,0,canvas.width,canvas.height);
             player.draw(ctx);
             drawEnemies();
             drawBullets();
+            drawEffects();
             drawPlayerDamage();
         }
         var intervalId = null;
