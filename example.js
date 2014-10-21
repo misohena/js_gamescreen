@@ -40,85 +40,67 @@
         div.appendChild(canvas);
         var ctx = canvas.getContext("2d");
 
-        var PLAYER_W = 60;
-        var playerX = 640/2-PLAYER_W/2 ;
-        var playerY = 400;
-        function drawPlayer()
+        var player = new Player();
+        function Player()
         {
-            ctx.fillStyle = "yellow";
-            ctx.fillRect(playerX+0,playerY+20,60,20);
-            ctx.fillRect(playerX+20,playerY+0,20,20);
-        }
-        function stepPlayer()
-        {
-            if(keyLeft){ playerX -= 10;}
-            if(keyRight){ playerX += 10;}
-            if(playerX >= 640){
-                playerX = -PLAYER_W+1;
-            }
-            if(playerX+PLAYER_W <= 0){
-                playerX = 640-1;
-            }
-            if(keyShoot){
-                keyShoot = false;
-                bullets.push(new Bullet(playerX + PLAYER_W/2 - BULLET_W/2, playerY-BULLET_H));
-            }
-        }
+            var PLAYER_W = 60;
+            var PLAYER_H = 40;
+            var x = 640/2-PLAYER_W/2 ;
+            var y = 400;
+            var vx = 0;
+            var ACC_X = 1.5;
+            var MAX_SPEED = 7;
 
-        var enemies = [];
-        var ENEMY_W = 40;
-        var ENEMY_H = 20;
-        function Enemy()
-        {
-            var dead = false;
-            var x = Math.random() * 640 - ENEMY_W;
-            var y = -ENEMY_H;
-            this.step = function(){
-                if(dead){
-                    return false;
-                }
-                y += 3;
-                if(y > 480){
-                    return false;
-                }
-                return true;
-            };
             this.getX = function(){return x;};
             this.getY = function(){return y;};
-            this.die = function(){
-                dead = true;
+            this.getW = function(){return PLAYER_W;};
+            this.getH = function(){return PLAYER_H;};
+            this.draw = function(ctx){
+                ctx.fillStyle = "yellow";
+                ctx.fillRect(x+0,y+20,60,20);
+                ctx.fillRect(x+20,y+0,20,20);
+            };
+            this.step = function(){
+                if(keyLeft){ vx -= ACC_X;}
+                else if(keyRight){ vx += ACC_X;}
+                else { vx = 0;}
+                if(vx < -MAX_SPEED) { vx = -MAX_SPEED;}
+                else if(vx > MAX_SPEED) { vx = MAX_SPEED;}
+
+                x += vx;
+                if(x >= 640){
+                    x = -PLAYER_W+1;
+                }
+                if(x+PLAYER_W <= 0){
+                    x = 640-1;
+                }
+                if(keyShoot){
+                    keyShoot = false;
+                    bullets.push(new Bullet(x + PLAYER_W/2 - BULLET_W/2, y-BULLET_H));
+                }
             };
         }
-        function drawEnemies()
+        var playerLife = 100;
+        var PLAYER_DAMAGE_TIME_MAX = 10;
+        function addPlayerDamage(amount)
         {
-            ctx.fillStyle = "red";
-            for(var i = 0; i < enemies.length; ++i){
-                var x = enemies[i].getX();
-                var y = enemies[i].getY();
-                ctx.fillRect(x,y,ENEMY_W, ENEMY_H);
+            playerDamageTime = PLAYER_DAMAGE_TIME_MAX;
+            playerLife -= amount;
+            if(playerLife <= 0){
+                playerLife = 0;
             }
         }
-        function stepEnemies()
+        var playerDamageTime = 0;
+        function stepPlayerDamage()
         {
-            for(var i = enemies.length-1; i >= 0; --i){
-                if(!enemies[i].step()){
-                    enemies.splice(i, 1);
-                }
+            if(playerDamageTime > 0){
+                --playerDamageTime;
             }
         }
-
-        function findObjectByRect(objectArray, objectW, objectH, rectX, rectY, rectW, rectH)
+        function drawPlayerDamage()
         {
-            for(var i = 0; i < objectArray.length; ++i){
-                var obj = objectArray[i];
-                var ox = obj.getX();
-                var oy = obj.getY();
-                if(ox < rectX+rectW && ox+objectW > rectX &&
-                   oy < rectY+rectW && oy+objectH > rectY){
-                    return obj;
-                }
-            }
-            return null;
+            ctx.fillStyle = "rgba(255,0,0," + playerDamageTime/PLAYER_DAMAGE_TIME_MAX + ")";
+            ctx.fillRect(0,0,canvas.width,canvas.height);
         }
 
         var bullets = [];
@@ -126,9 +108,14 @@
         var BULLET_H = 10;
         function Bullet(x, y)
         {
+            var self = this;
             function findEnemy(){
-                return findObjectByRect(enemies, ENEMY_W, ENEMY_H, x, y, BULLET_W, BULLET_H);
+                return findObjectByRect(enemies, getObjectRect(self));
             }
+            this.getX = function(){return x;};
+            this.getY = function(){return y;};
+            this.getW = function(){return BULLET_W;};
+            this.getH = function(){return BULLET_H;};
             this.step = function(){
                 y -= 7;
                 if(y <= -BULLET_H){
@@ -142,45 +129,129 @@
 
                 return true;
             };
-            this.getX = function(){return x;};
-            this.getY = function(){return y;};
+            this.draw = function(ctx){
+                ctx.fillStyle = "white";
+                ctx.fillRect(x,y,BULLET_W, BULLET_H);
+            };
         }
         function drawBullets()
         {
-            ctx.fillStyle = "white";
-            for(var i = 0; i < bullets.length; ++i){
-                var x = bullets[i].getX();
-                var y = bullets[i].getY();
-                ctx.fillRect(x,y,BULLET_W, BULLET_H);
-            }
+            drawObjects(bullets);
         }
         function stepBullets()
         {
-            for(var i = bullets.length-1; i >= 0; --i){
-                if(!bullets[i].step()){
-                    bullets.splice(i, 1);
+            stepObjects(bullets);
+        }
+
+        var enemies = [];
+        var ENEMY_W = 40;
+        var ENEMY_H = 20;
+        function Enemy()
+        {
+            var self = this;
+            var dead = false;
+            var x = Math.random() * 640 - ENEMY_W;
+            var y = -ENEMY_H;
+            this.getX = function(){return x;};
+            this.getY = function(){return y;};
+            this.getW = function(){return ENEMY_W;};
+            this.getH = function(){return ENEMY_H;};
+            this.die = function(){
+                dead = true;
+            };
+            this.step = function(){
+                if(dead){
+                    return false;
+                }
+                y += 3;
+                if(y > 480){
+                    addPlayerDamage(5);
+                    return false;
+                }
+                if(intersectsObject(self, player)){
+                    addPlayerDamage(20);
+                    return false;
+                }
+                return true;
+            };
+            this.draw = function(ctx){
+                ctx.fillStyle = "red";
+                ctx.fillRect(x,y,ENEMY_W, ENEMY_H);
+            };
+        }
+
+        function drawEnemies()
+        {
+            drawObjects(enemies);
+        }
+        function stepEnemies()
+        {
+            stepObjects(enemies);
+        }
+
+
+        function drawObjects(objectArray)
+        {
+            for(var i = 0; i < objectArray.length; ++i){
+                if(objectArray[i]){
+                    objectArray[i].draw(ctx);
                 }
             }
         }
-
-        function onFrame()
+        function stepObjects(objectArray)
         {
-            fetchKeyState();
-
-            stepPlayer();
-
-            if(Math.random() > 0.95){
-                enemies.push(new Enemy());
+            for(var i = 0; i < objectArray.length; ++i){
+                if(objectArray[i]){
+                    if(!objectArray[i].step()){
+                        objectArray[i] = null;
+                    }
+                }
             }
-
-            stepEnemies();
-            stepBullets();
-
-            ctx.clearRect(0,0,640,480);
-            drawPlayer();
-            drawEnemies();
-            drawBullets();
+            removeNull(objectArray);
         }
+        function removeNull(objectArray)
+        {
+            var dst = 0;
+            var src;
+            for(src = 0; src < objectArray.length; ++src){
+                if(objectArray[src]){
+                    if(dst != src){
+                        objectArray[dst] = objectArray[src];
+                    }
+                    ++dst;
+                }
+            }
+            objectArray.splice(dst, src - dst);
+        }
+        function findObjectByRect(objectArray, r)
+        {
+            for(var i = 0; i < objectArray.length; ++i){
+                var obj = objectArray[i];
+                if(obj && intersectsRect(getObjectRect(obj), r)){
+                    return obj;
+                }
+            }
+            return null;
+        }
+        function intersectsObject(o1, o2)
+        {
+            return intersectsRect(getObjectRect(o1), getObjectRect(o2));
+        }
+        function getObjectRect(obj)
+        {
+            return obj ?
+                {x:obj.getX(), y:obj.getY(), w:obj.getW(), h:obj.getH()} :
+                {x:0,y:0,w:0,h:0};
+
+        }
+        function intersectsRect(r1, r2)
+        {
+            return r1.x+r1.w > r2.x &&
+                r1.x < r2.x+r2.w &&
+                r1.y+r1.h > r2.y &&
+                r1.y < r2.y+r2.h;
+        }
+
 
 
         // Input
@@ -262,7 +333,46 @@
             deviceMotionEvent = e;
         }, false);
 
-        setInterval(onFrame, 20);
+
+
+        // UI
+        div.setGameScreen = function(gameScreen){
+            var controlBar = gameScreen.getControlBar();
+            controlBar.addButton("left").setText("Pause").setOnClick(pauseGame);
+        };
+
+        // Timer
+        function onFrame()
+        {
+            fetchKeyState();
+
+            player.step();
+
+            if(Math.random() > 0.95){
+                enemies.push(new Enemy());
+            }
+
+            stepEnemies();
+            stepBullets();
+            stepPlayerDamage();
+
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            player.draw(ctx);
+            drawEnemies();
+            drawBullets();
+            drawPlayerDamage();
+        }
+        var intervalId = null;
+        function pauseGame(){
+            if(intervalId !== null){
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            else{
+                intervalId = setInterval(onFrame, 20);
+            }
+        }
+        pauseGame();
 
         return div;
     };
