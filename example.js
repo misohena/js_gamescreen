@@ -165,6 +165,8 @@
 
         function onFrame()
         {
+            fetchKeyState();
+
             stepPlayer();
 
             if(Math.random() > 0.95){
@@ -180,24 +182,37 @@
             drawBullets();
         }
 
+
+        // Input
+
         var keyLeft = false;
         var keyRight = false;
         var keyShoot = false;
+        var keyLeftEdge = false;
+        var keyRightEdge = false;
+        var keyLeftState = false;
+        var keyRightState = false;
+        function fetchKeyState(){
+            keyLeft = keyLeftState || keyLeftEdge || touchLeftState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x > 2.0);
+            keyRight = keyRightState || keyRightEdge || touchRightState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x < -2.0);
+            keyLeftEdge = touchLeftEdge =
+            keyRightEdge = touchRightEdge = false;
+        }
         function onKeyDown(e){
             switch(e.keyCode){
-            case 37: keyLeft = true; return true;
-            case 39: keyRight = true; return true;
+            case 37: keyLeftState = keyLeftEdge = true; return true;
+            case 39: keyRightState = keyRightEdge = true; return true;
             case 90: //Z
             case 32:  //space
-                keyShoot = true;
+                keyShoot = !e.repeat;
                 return true;
             }
             return false;
         }
         function onKeyUp(e){
             switch(e.keyCode){
-            case 37: keyLeft = false; return true;
-            case 39: keyRight = false; return true;
+            case 37: keyLeftState = false; return true;
+            case 39: keyRightState = false; return true;
             case 90: //Z
             case 32:  //space
                 return true;
@@ -215,6 +230,36 @@
                 e.stopPropagation();
                 e.preventDefault();
             }
+        }, false);
+
+        var touches = {}; ///@todo track touchs
+        var touchLeftState = false;
+        var touchRightState = false;
+        var touchLeftEdge = false;
+        var touchRightEdge = false;
+        div.addEventListener("touchstart", function(e){
+            var pos = misohena.CSSTransformUtils.convertPointFromPageToNodeContentArea(div, e.touches[0].pageX, e.touches[0].pageY);
+            if(pos[0] < 150){
+                touchLeftEdge = touchLeftState = true;
+            }
+            else if(pos[0] > 640-150){
+                touchRightEdge = touchRightState = true;
+            }
+            else{
+                keyShoot = true;
+            }
+            e.stopPropagation();
+            e.preventDefault();
+        }, false);
+        div.addEventListener("touchend", function(e){
+            touchLeftState = touchRightState = false;
+            e.stopPropagation();
+            e.preventDefault();
+        }, false);
+
+        var deviceMotionEvent = null;
+        window.addEventListener("devicemotion", function(e){
+            deviceMotionEvent = e;
         }, false);
 
         setInterval(onFrame, 20);
