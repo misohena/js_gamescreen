@@ -93,6 +93,7 @@
             playerLife -= amount;
             if(playerLife <= 0){
                 playerLife = 0;
+                endGame();
             }
             effects.push(new EffectText("-" + amount, x, y, 30));
         }
@@ -149,15 +150,36 @@
             stepObjects(bullets);
         }
 
+
+        function EnemyGenerator()
+        {
+            var x = 123456;
+            function rand(){
+                x=(x*1103515245+12345)&2147483647;
+                return x / 2147483648;
+            }
+            var count = 0;
+            var nextTime = 100;
+            this.step = function(){
+                if(--nextTime <= 0){
+                    var x = rand() * (640 - ENEMY_W);
+                    enemies.push(new Enemy(x));
+                    ++count;
+
+                    nextTime = 5000/TIMER_PERIOD/count + rand() * (100 * 100 / (100+count));
+                }
+            };
+        }
+        var enemyGenerator = new EnemyGenerator();
+
         var enemies = [];
         var ENEMY_W = 40;
         var ENEMY_H = 20;
         var GROUND_Y = 440;
-        function Enemy()
+        function Enemy(x)
         {
             var self = this;
             var dead = false;
-            var x = Math.random() * 640 - ENEMY_W;
             var y = -ENEMY_H;
             this.getX = function(){return x;};
             this.getY = function(){return y;};
@@ -399,21 +421,64 @@
             controlBar.addButton("left").setText("Pause").setOnClick(pauseGame);
         };
 
+        //
+        var TIMER_PERIOD = 20;
+        var gameTime = 0; //[msec]
+        var GAMESTATE = {
+            PLAYING:0,
+            END:1
+        };
+        var gameState = GAMESTATE.PLAYING;
+
+        function endGame()
+        {
+            if(gameState == GAMESTATE.PLAYING){
+                gameState = GAMESTATE.END;
+            }
+        }
+        function drawGameTime(ctx)
+        {
+            var gameTimeMS = gameTime * TIMER_PERIOD;
+            var ms = ("00" + gameTimeMS % 1000).substr(-3);
+            var s = ("0"+ Math.floor(gameTimeMS / 1000) % 60).substr(-2);
+            var m = Math.floor(gameTimeMS / 60000);
+            ctx.fillStyle = "white";
+            ctx.font = "20px sans-serif";
+            ctx.textAlign = "right";
+            ctx.textBaseline = "top";
+            ctx.fillText(m+":"+s+":"+ms, canvas.width, 0);
+        }
+        function drawGameState(ctx)
+        {
+            if(gameState == GAMESTATE.END){
+                ctx.fillStyle = "white";
+                ctx.font = "32px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "top";
+                ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
+            }
+        }
+
         // Timer
         function onFrame()
         {
+            ++gameTime;
+
             fetchKeyState();
 
-            player.step();
+            if(gameState == GAMESTATE.PLAYING){
+                player.step();
 
-            if(Math.random() > 0.95){
-                enemies.push(new Enemy());
+                enemyGenerator.step();
+
+                stepEnemies();
+                stepBullets();
+                stepEffects();
+                stepPlayerDamage();
             }
-
-            stepEnemies();
-            stepBullets();
-            stepEffects();
-            stepPlayerDamage();
+            else if(gameState == GAMESTATE.END){
+                stopTimer();
+            }
 
             ctx.clearRect(0,0,canvas.width,canvas.height);
             player.draw(ctx);
@@ -421,18 +486,32 @@
             drawBullets();
             drawEffects();
             drawPlayerDamage();
+            drawGameTime(ctx);
+            drawGameState(ctx);
         }
         var intervalId = null;
         function pauseGame(){
+            if(gameState == GAMESTATE.PLAYING){
+                if(intervalId !== null){
+                    stopTimer();
+                }
+                else{
+                    startTimer();
+                }
+            }
+        }
+        function startTimer(){
+            if(intervalId === null){
+                intervalId = setInterval(onFrame, TIMER_PERIOD);
+            }
+        }
+        function stopTimer(){
             if(intervalId !== null){
                 clearInterval(intervalId);
                 intervalId = null;
             }
-            else{
-                intervalId = setInterval(onFrame, 20);
-            }
         }
-        pauseGame();
+        startTimer();
 
         return div;
     };
