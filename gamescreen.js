@@ -363,7 +363,7 @@
         div.style.display = "table-cell";
         div.style.textAlign = "center";
         div.style.verticalAlign = "middle";
-        div.style.marginLeft = "2px";
+        div.style.marginLeft = "4px";
         div.style.opacity = BUTTON_OPACITY_NORMAL;
         div.style.fontSize = px(BUTTON_HEIGHT * 0.5);
         div.style.cursor = "default";
