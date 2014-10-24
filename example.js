@@ -40,478 +40,505 @@
         div.appendChild(canvas);
         var ctx = canvas.getContext("2d");
 
-        var player = new Player();
-        function Player()
-        {
-            var PLAYER_W = 60;
-            var PLAYER_H = 40;
-            var x = 640/2-PLAYER_W/2 ;
-            var y = 400;
-            var vx = 0;
-            var ACC_X = 1.5;
-            var MAX_SPEED = 7;
-
-            this.getX = function(){return x;};
-            this.getY = function(){return y;};
-            this.getW = function(){return PLAYER_W;};
-            this.getH = function(){return PLAYER_H;};
-            this.draw = function(ctx){
-                ctx.fillStyle = "yellow";
-                ctx.fillRect(x+0,y+20,60,20);
-                ctx.fillRect(x+20,y+0,20,20);
-                ctx.fillStyle = "black";
-                ctx.font = "bold 20px sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "top";
-                ctx.fillText(playerLife, x+PLAYER_W/2, y+20);
-            };
-            this.step = function(){
-                if(keyLeft){ vx -= ACC_X;}
-                else if(keyRight){ vx += ACC_X;}
-                else { vx = 0;}
-                if(vx < -MAX_SPEED) { vx = -MAX_SPEED;}
-                else if(vx > MAX_SPEED) { vx = MAX_SPEED;}
-
-                x += vx;
-                if(x >= 640){
-                    x = -PLAYER_W+1;
-                }
-                if(x+PLAYER_W <= 0){
-                    x = 640-1;
-                }
-                if(keyShoot){
-                    keyShoot = false;
-                    bullets.push(new Bullet(x + PLAYER_W/2 - BULLET_W/2, y-BULLET_H));
-                }
-            };
-        }
-        var playerLife = 100;
-        var PLAYER_DAMAGE_TIME_MAX = 10;
-        function addPlayerDamage(amount, x, y)
-        {
-            playerDamageTime = PLAYER_DAMAGE_TIME_MAX;
-            playerLife -= amount;
-            if(playerLife <= 0){
-                playerLife = 0;
-                endGame();
-            }
-            effects.push(new EffectText("-" + amount, x, y, 30));
-        }
-        var playerDamageTime = 0;
-        function stepPlayerDamage()
-        {
-            if(playerDamageTime > 0){
-                --playerDamageTime;
-            }
-        }
-        function drawPlayerDamage()
-        {
-            ctx.fillStyle = "rgba(255,0,0," + playerDamageTime/PLAYER_DAMAGE_TIME_MAX + ")";
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-        }
-
-        var bullets = [];
-        var BULLET_W = 10;
-        var BULLET_H = 10;
-        function Bullet(x, y)
+        function InputDevice()
         {
             var self = this;
-            function findEnemy(){
-                return findObjectByRect(enemies, getObjectRect(self));
+            this.keyLeft = false;
+            this.keyRight = false;
+            this.keyShoot = false;
+
+            var keyLeftEdge = false;
+            var keyRightEdge = false;
+            var keyLeftState = false;
+            var keyRightState = false;
+            this.fetchKeyState = fetchKeyState;
+            function fetchKeyState(){
+                self.keyLeft = keyLeftState || keyLeftEdge || touchLeftState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x > 2.0);
+                self.keyRight = keyRightState || keyRightEdge || touchRightState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x < -2.0);
+                keyLeftEdge = touchLeftEdge =
+                    keyRightEdge = touchRightEdge = false;
             }
-            this.getX = function(){return x;};
-            this.getY = function(){return y;};
-            this.getW = function(){return BULLET_W;};
-            this.getH = function(){return BULLET_H;};
-            this.step = function(){
-                y -= 7;
-                if(y <= -BULLET_H){
-                    return false;
+            function onKeyDown(e){
+                switch(e.keyCode){
+                case 37: keyLeftState = keyLeftEdge = true; return true;
+                case 39: keyRightState = keyRightEdge = true; return true;
+                case 90: //Z
+                case 32:  //space
+                    self.keyShoot = !e.repeat;
+                    return true;
                 }
-                var enemy = findEnemy();
-                if(enemy){
-                    enemy.die();
-                    return false;
-                }
-
-                return true;
-            };
-            this.draw = function(ctx){
-                ctx.fillStyle = "white";
-                ctx.fillRect(x,y,BULLET_W, BULLET_H);
-            };
-        }
-        function drawBullets()
-        {
-            drawObjects(bullets);
-        }
-        function stepBullets()
-        {
-            stepObjects(bullets);
-        }
-
-
-        function EnemyGenerator()
-        {
-            var x = 123456;
-            function rand(){
-                x=(x*1103515245+12345)&2147483647;
-                return x / 2147483648;
+                return false;
             }
-            var count = 0;
-            var nextTime = 100;
-            this.step = function(){
-                if(--nextTime <= 0){
-                    var x = rand() * (640 - ENEMY_W);
-                    enemies.push(new Enemy(x));
-                    ++count;
-
-                    nextTime = 5000/TIMER_PERIOD/count + rand() * (100 * 100 / (100+count));
+            function onKeyUp(e){
+                switch(e.keyCode){
+                case 37: keyLeftState = false; return true;
+                case 39: keyRightState = false; return true;
+                case 90: //Z
+                case 32:  //space
+                    return true;
                 }
-            };
-        }
-        var enemyGenerator = new EnemyGenerator();
-
-        var enemies = [];
-        var ENEMY_W = 40;
-        var ENEMY_H = 20;
-        var GROUND_Y = 440;
-        function Enemy(x)
-        {
-            var self = this;
-            var dead = false;
-            var y = -ENEMY_H;
-            this.getX = function(){return x;};
-            this.getY = function(){return y;};
-            this.getW = function(){return ENEMY_W;};
-            this.getH = function(){return ENEMY_H;};
-            this.die = function(){
-                dead = true;
-            };
-            this.step = function(){
-                if(dead){
-                    return false;
+                return false;
+            }
+            div.addEventListener("keydown", function(e){
+                if(onKeyDown(e)){
+                    e.stopPropagation();
+                    e.preventDefault();
                 }
-                y += 3;
-                if(y > GROUND_Y){
-                    addPlayerDamage(5, x, y);
-                    return false;
+            }, false);
+            div.addEventListener("keyup", function(e){
+                if(onKeyUp(e)){
+                    e.stopPropagation();
+                    e.preventDefault();
                 }
-                if(intersectsObject(self, player)){
-                    addPlayerDamage(20, x, y);
-                    return false;
+            }, false);
+
+            var touches = {}; ///@todo track touchs
+            var touchLeftState = false;
+            var touchRightState = false;
+            var touchLeftEdge = false;
+            var touchRightEdge = false;
+            div.addEventListener("touchstart", function(e){
+                var pos = misohena.CSSTransformUtils.convertPointFromPageToNodeContentArea(div, e.touches[0].pageX, e.touches[0].pageY);
+                if(pos[0] < 150){
+                    touchLeftEdge = touchLeftState = true;
                 }
-                return true;
-            };
-            this.draw = function(ctx){
-                ctx.fillStyle = "red";
-                ctx.fillRect(x,y,ENEMY_W, ENEMY_H);
-            };
-        }
+                else if(pos[0] > 640-150){
+                    touchRightEdge = touchRightState = true;
+                }
+                else{
+                    self.keyShoot = true;
+                }
+                e.stopPropagation();
+                e.preventDefault();
+            }, false);
+            div.addEventListener("touchend", function(e){
+                touchLeftState = touchRightState = false;
+                e.stopPropagation();
+                e.preventDefault();
+            }, false);
 
-        function drawEnemies()
-        {
-            drawObjects(enemies);
+            var deviceMotionEvent = null;
+            window.addEventListener("devicemotion", function(e){
+                deviceMotionEvent = e;
+            }, false);
         }
-        function stepEnemies()
-        {
-            stepObjects(enemies);
-        }
-
 
         //
-        // EffectObject
+        // Game
         //
-        var effects = [];
-        function EffectText(text, x, y, lifetime, setupStyle)
+
+        function World(inputDevice)
         {
-            var vy = -2;
-            if(!setupStyle){
-                setupStyle = function(ctx){
-                    ctx.fillStyle = "red";
+            var player = new Player();
+            function Player()
+            {
+                var PLAYER_W = 60;
+                var PLAYER_H = 40;
+                var x = 640/2-PLAYER_W/2 ;
+                var y = 400;
+                var vx = 0;
+                var ACC_X = 1.5;
+                var MAX_SPEED = 7;
+
+                this.getX = function(){return x;};
+                this.getY = function(){return y;};
+                this.getW = function(){return PLAYER_W;};
+                this.getH = function(){return PLAYER_H;};
+                this.draw = function(ctx){
+                    ctx.fillStyle = "yellow";
+                    ctx.fillRect(x+0,y+20,60,20);
+                    ctx.fillRect(x+20,y+0,20,20);
+                    ctx.fillStyle = "black";
                     ctx.font = "bold 20px sans-serif";
-                    ctx.textAlign = "left";
+                    ctx.textAlign = "center";
                     ctx.textBaseline = "top";
+                    ctx.fillText(playerLife, x+PLAYER_W/2, y+20);
+                };
+                this.step = function(){
+                    if(inputDevice.keyLeft){ vx -= ACC_X;}
+                    else if(inputDevice.keyRight){ vx += ACC_X;}
+                    else { vx = 0;}
+                    if(vx < -MAX_SPEED) { vx = -MAX_SPEED;}
+                    else if(vx > MAX_SPEED) { vx = MAX_SPEED;}
+
+                    x += vx;
+                    if(x >= 640){
+                        x = -PLAYER_W+1;
+                    }
+                    if(x+PLAYER_W <= 0){
+                        x = 640-1;
+                    }
+                    if(inputDevice.keyShoot){
+                        inputDevice.keyShoot = false;
+                        bullets.push(new Bullet(x + PLAYER_W/2 - BULLET_W/2, y-BULLET_H));
+                    }
                 };
             }
-            this.getX = function(){ return x;};
-            this.getY = function(){ return y;};
-            this.getW = function(){ return 0;};
-            this.getH = function(){ return 0;};
-            this.step = function(){
-                if(--lifetime <= 0){
-                    return false;
+            var playerLife = 100;
+            var PLAYER_DAMAGE_TIME_MAX = 10;
+            function addPlayerDamage(amount, x, y)
+            {
+                playerDamageTime = PLAYER_DAMAGE_TIME_MAX;
+                playerLife -= amount;
+                if(playerLife <= 0){
+                    playerLife = 0;
+                    endGame();
                 }
-
-                vy += 0.08;
-                if(vy > 0){
-                    vy = 0;
-                }
-                y += vy;
-
-                return true;
-            };
-            this.draw = function(ctx){
-                setupStyle(ctx);
-                ctx.fillText(text, x, y);
-            };
-        }
-        function stepEffects()
-        {
-            stepObjects(effects);
-        }
-        function drawEffects()
-        {
-            drawObjects(effects);
-        }
-
-
-        //
-        // GameObject
-        //
-
-        function drawObjects(objectArray)
-        {
-            for(var i = 0; i < objectArray.length; ++i){
-                if(objectArray[i]){
-                    objectArray[i].draw(ctx);
+                effects.push(new EffectText("-" + amount, x, y, 30));
+            }
+            var playerDamageTime = 0;
+            function stepPlayerDamage()
+            {
+                if(playerDamageTime > 0){
+                    --playerDamageTime;
                 }
             }
-        }
-        function stepObjects(objectArray)
-        {
-            for(var i = 0; i < objectArray.length; ++i){
-                if(objectArray[i]){
-                    if(!objectArray[i].step()){
-                        objectArray[i] = null;
+            function drawPlayerDamage()
+            {
+                ctx.fillStyle = "rgba(255,0,0," + playerDamageTime/PLAYER_DAMAGE_TIME_MAX + ")";
+                ctx.fillRect(0,0,canvas.width,canvas.height);
+            }
+
+            var bullets = [];
+            var BULLET_W = 10;
+            var BULLET_H = 10;
+            function Bullet(x, y)
+            {
+                var self = this;
+                function findEnemy(){
+                    return findObjectByRect(enemies, getObjectRect(self));
+                }
+                this.getX = function(){return x;};
+                this.getY = function(){return y;};
+                this.getW = function(){return BULLET_W;};
+                this.getH = function(){return BULLET_H;};
+                this.step = function(){
+                    y -= 7;
+                    if(y <= -BULLET_H){
+                        return false;
+                    }
+                    var enemy = findEnemy();
+                    if(enemy){
+                        enemy.die();
+                        return false;
+                    }
+
+                    return true;
+                };
+                this.draw = function(ctx){
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(x,y,BULLET_W, BULLET_H);
+                };
+            }
+            function drawBullets()
+            {
+                drawObjects(bullets);
+            }
+            function stepBullets()
+            {
+                stepObjects(bullets);
+            }
+
+
+            function EnemyGenerator()
+            {
+                var x = 123456;
+                function rand(){
+                    x=(x*1103515245+12345)&2147483647;
+                    return x / 2147483648;
+                }
+                var count = 0;
+                var nextTime = 100;
+                this.step = function(){
+                    if(--nextTime <= 0){
+                        var x = rand() * (640 - ENEMY_W);
+                        enemies.push(new Enemy(x));
+                        ++count;
+
+                        nextTime = 5000/TIMER_PERIOD/count + rand() * (100 * 100 / (100+count));
+                    }
+                };
+            }
+            var enemyGenerator = new EnemyGenerator();
+
+            var enemies = [];
+            var ENEMY_W = 40;
+            var ENEMY_H = 20;
+            var GROUND_Y = 440;
+            function Enemy(x)
+            {
+                var self = this;
+                var dead = false;
+                var y = -ENEMY_H;
+                this.getX = function(){return x;};
+                this.getY = function(){return y;};
+                this.getW = function(){return ENEMY_W;};
+                this.getH = function(){return ENEMY_H;};
+                this.die = function(){
+                    dead = true;
+                };
+                this.step = function(){
+                    if(dead){
+                        return false;
+                    }
+                    y += 3;
+                    if(y > GROUND_Y){
+                        addPlayerDamage(5, x, y);
+                        return false;
+                    }
+                    if(intersectsObject(self, player)){
+                        addPlayerDamage(20, x, y);
+                        return false;
+                    }
+                    return true;
+                };
+                this.draw = function(ctx){
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(x,y,ENEMY_W, ENEMY_H);
+                };
+            }
+
+            function drawEnemies()
+            {
+                drawObjects(enemies);
+            }
+            function stepEnemies()
+            {
+                stepObjects(enemies);
+            }
+
+
+            //
+            // EffectObject
+            //
+            var effects = [];
+            function EffectText(text, x, y, lifetime, setupStyle)
+            {
+                var vy = -2;
+                if(!setupStyle){
+                    setupStyle = function(ctx){
+                        ctx.fillStyle = "red";
+                        ctx.font = "bold 20px sans-serif";
+                        ctx.textAlign = "left";
+                        ctx.textBaseline = "top";
+                    };
+                }
+                this.getX = function(){ return x;};
+                this.getY = function(){ return y;};
+                this.getW = function(){ return 0;};
+                this.getH = function(){ return 0;};
+                this.step = function(){
+                    if(--lifetime <= 0){
+                        return false;
+                    }
+
+                    vy += 0.08;
+                    if(vy > 0){
+                        vy = 0;
+                    }
+                    y += vy;
+
+                    return true;
+                };
+                this.draw = function(ctx){
+                    setupStyle(ctx);
+                    ctx.fillText(text, x, y);
+                };
+            }
+            function stepEffects()
+            {
+                stepObjects(effects);
+            }
+            function drawEffects()
+            {
+                drawObjects(effects);
+            }
+
+
+            //
+            // GameObject
+            //
+
+            function drawObjects(objectArray)
+            {
+                for(var i = 0; i < objectArray.length; ++i){
+                    if(objectArray[i]){
+                        objectArray[i].draw(ctx);
                     }
                 }
             }
-            removeNull(objectArray);
-        }
-        function removeNull(objectArray)
-        {
-            var dst = 0;
-            var src;
-            for(src = 0; src < objectArray.length; ++src){
-                if(objectArray[src]){
-                    if(dst != src){
-                        objectArray[dst] = objectArray[src];
+            function stepObjects(objectArray)
+            {
+                for(var i = 0; i < objectArray.length; ++i){
+                    if(objectArray[i]){
+                        if(!objectArray[i].step()){
+                            objectArray[i] = null;
+                        }
                     }
-                    ++dst;
                 }
+                removeNull(objectArray);
             }
-            objectArray.splice(dst, src - dst);
-        }
-        function findObjectByRect(objectArray, r)
-        {
-            for(var i = 0; i < objectArray.length; ++i){
-                var obj = objectArray[i];
-                if(obj && intersectsRect(getObjectRect(obj), r)){
-                    return obj;
+            function removeNull(objectArray)
+            {
+                var dst = 0;
+                var src;
+                for(src = 0; src < objectArray.length; ++src){
+                    if(objectArray[src]){
+                        if(dst != src){
+                            objectArray[dst] = objectArray[src];
+                        }
+                        ++dst;
+                    }
                 }
+                objectArray.splice(dst, src - dst);
             }
-            return null;
-        }
-        function intersectsObject(o1, o2)
-        {
-            return intersectsRect(getObjectRect(o1), getObjectRect(o2));
-        }
-        function getObjectRect(obj)
-        {
-            return obj ?
-                {x:obj.getX(), y:obj.getY(), w:obj.getW(), h:obj.getH()} :
+            function findObjectByRect(objectArray, r)
+            {
+                for(var i = 0; i < objectArray.length; ++i){
+                    var obj = objectArray[i];
+                    if(obj && intersectsRect(getObjectRect(obj), r)){
+                        return obj;
+                    }
+                }
+                return null;
+            }
+            function intersectsObject(o1, o2)
+            {
+                return intersectsRect(getObjectRect(o1), getObjectRect(o2));
+            }
+            function getObjectRect(obj)
+            {
+                return obj ?
+                    {x:obj.getX(), y:obj.getY(), w:obj.getW(), h:obj.getH()} :
                 {x:0,y:0,w:0,h:0};
 
+            }
+            function intersectsRect(r1, r2)
+            {
+                return r1.x+r1.w > r2.x &&
+                    r1.x < r2.x+r2.w &&
+                    r1.y+r1.h > r2.y &&
+                    r1.y < r2.y+r2.h;
+            }
+
+
+            //
+
+            var TIMER_PERIOD = 20;
+            var gameTime = 0; //[msec]
+            var GAMESTATE = {
+                PLAYING:0,
+                END:1
+            };
+            var gameState = GAMESTATE.PLAYING;
+
+            function endGame()
+            {
+                if(gameState == GAMESTATE.PLAYING){
+                    gameState = GAMESTATE.END;
+                }
+            }
+            function drawGameTime(ctx)
+            {
+                var gameTimeMS = gameTime * TIMER_PERIOD;
+                var ms = ("00" + gameTimeMS % 1000).substr(-3);
+                var s = ("0"+ Math.floor(gameTimeMS / 1000) % 60).substr(-2);
+                var m = Math.floor(gameTimeMS / 60000);
+                ctx.fillStyle = "white";
+                ctx.font = "20px sans-serif";
+                ctx.textAlign = "right";
+                ctx.textBaseline = "top";
+                ctx.fillText(m+":"+s+":"+ms, canvas.width, 0);
+            }
+            function drawGameState(ctx)
+            {
+                if(gameState == GAMESTATE.END){
+                    ctx.fillStyle = "white";
+                    ctx.font = "32px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "top";
+                    ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
+                }
+            }
+
+            // Timer
+            function onFrame()
+            {
+                ++gameTime;
+
+                inputDevice.fetchKeyState();
+
+                if(gameState == GAMESTATE.PLAYING){
+                    player.step();
+
+                    enemyGenerator.step();
+
+                    stepEnemies();
+                    stepBullets();
+                    stepEffects();
+                    stepPlayerDamage();
+                }
+                else if(gameState == GAMESTATE.END){
+                    stopTimer();
+                }
+
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                player.draw(ctx);
+                drawEnemies();
+                drawBullets();
+                drawEffects();
+                drawPlayerDamage();
+                drawGameTime(ctx);
+                drawGameState(ctx);
+            }
+            var intervalId = null;
+            this.pauseGame = pauseGame;
+            function pauseGame(){
+                if(gameState == GAMESTATE.PLAYING){
+                    if(intervalId !== null){
+                        stopTimer();
+                    }
+                    else{
+                        startTimer();
+                    }
+                }
+            }
+            function startTimer(){
+                if(intervalId === null){
+                    intervalId = setInterval(onFrame, TIMER_PERIOD);
+                }
+            }
+            function stopTimer(){
+                if(intervalId !== null){
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+            startTimer();
+
+            this.destroyWorld = destroyWorld;
+            function destroyWorld()
+            {
+                stopTimer();
+            }
         }
-        function intersectsRect(r1, r2)
+
+
+        var inputDevice = new InputDevice();
+        var world = new World(inputDevice);
+        function retryGame()
         {
-            return r1.x+r1.w > r2.x &&
-                r1.x < r2.x+r2.w &&
-                r1.y+r1.h > r2.y &&
-                r1.y < r2.y+r2.h;
+            world.destroyWorld();
+            world = new World(inputDevice);
         }
-
-
-
-        // Input
-
-        var keyLeft = false;
-        var keyRight = false;
-        var keyShoot = false;
-        var keyLeftEdge = false;
-        var keyRightEdge = false;
-        var keyLeftState = false;
-        var keyRightState = false;
-        function fetchKeyState(){
-            keyLeft = keyLeftState || keyLeftEdge || touchLeftState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x > 2.0);
-            keyRight = keyRightState || keyRightEdge || touchRightState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x < -2.0);
-            keyLeftEdge = touchLeftEdge =
-            keyRightEdge = touchRightEdge = false;
-        }
-        function onKeyDown(e){
-            switch(e.keyCode){
-            case 37: keyLeftState = keyLeftEdge = true; return true;
-            case 39: keyRightState = keyRightEdge = true; return true;
-            case 90: //Z
-            case 32:  //space
-                keyShoot = !e.repeat;
-                return true;
-            }
-            return false;
-        }
-        function onKeyUp(e){
-            switch(e.keyCode){
-            case 37: keyLeftState = false; return true;
-            case 39: keyRightState = false; return true;
-            case 90: //Z
-            case 32:  //space
-                return true;
-            }
-            return false;
-        }
-        div.addEventListener("keydown", function(e){
-            if(onKeyDown(e)){
-                e.stopPropagation();
-                e.preventDefault();
-            }
-        }, false);
-        div.addEventListener("keyup", function(e){
-            if(onKeyUp(e)){
-                e.stopPropagation();
-                e.preventDefault();
-            }
-        }, false);
-
-        var touches = {}; ///@todo track touchs
-        var touchLeftState = false;
-        var touchRightState = false;
-        var touchLeftEdge = false;
-        var touchRightEdge = false;
-        div.addEventListener("touchstart", function(e){
-            var pos = misohena.CSSTransformUtils.convertPointFromPageToNodeContentArea(div, e.touches[0].pageX, e.touches[0].pageY);
-            if(pos[0] < 150){
-                touchLeftEdge = touchLeftState = true;
-            }
-            else if(pos[0] > 640-150){
-                touchRightEdge = touchRightState = true;
-            }
-            else{
-                keyShoot = true;
-            }
-            e.stopPropagation();
-            e.preventDefault();
-        }, false);
-        div.addEventListener("touchend", function(e){
-            touchLeftState = touchRightState = false;
-            e.stopPropagation();
-            e.preventDefault();
-        }, false);
-
-        var deviceMotionEvent = null;
-        window.addEventListener("devicemotion", function(e){
-            deviceMotionEvent = e;
-        }, false);
-
-
 
         // UI
         div.setGameScreen = function(gameScreen){
             var controlBar = gameScreen.getControlBar();
-            controlBar.addButton("left").setText("Pause").setOnClick(pauseGame);
+            controlBar.addButton("left").setText("Pause").setOnClick(function(){world.pauseGame();});
+            controlBar.addButton("left").setText("Retry").setOnClick(retryGame);
         };
 
-        //
-        var TIMER_PERIOD = 20;
-        var gameTime = 0; //[msec]
-        var GAMESTATE = {
-            PLAYING:0,
-            END:1
-        };
-        var gameState = GAMESTATE.PLAYING;
-
-        function endGame()
-        {
-            if(gameState == GAMESTATE.PLAYING){
-                gameState = GAMESTATE.END;
-            }
-        }
-        function drawGameTime(ctx)
-        {
-            var gameTimeMS = gameTime * TIMER_PERIOD;
-            var ms = ("00" + gameTimeMS % 1000).substr(-3);
-            var s = ("0"+ Math.floor(gameTimeMS / 1000) % 60).substr(-2);
-            var m = Math.floor(gameTimeMS / 60000);
-            ctx.fillStyle = "white";
-            ctx.font = "20px sans-serif";
-            ctx.textAlign = "right";
-            ctx.textBaseline = "top";
-            ctx.fillText(m+":"+s+":"+ms, canvas.width, 0);
-        }
-        function drawGameState(ctx)
-        {
-            if(gameState == GAMESTATE.END){
-                ctx.fillStyle = "white";
-                ctx.font = "32px sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "top";
-                ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
-            }
-        }
-
-        // Timer
-        function onFrame()
-        {
-            ++gameTime;
-
-            fetchKeyState();
-
-            if(gameState == GAMESTATE.PLAYING){
-                player.step();
-
-                enemyGenerator.step();
-
-                stepEnemies();
-                stepBullets();
-                stepEffects();
-                stepPlayerDamage();
-            }
-            else if(gameState == GAMESTATE.END){
-                stopTimer();
-            }
-
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            player.draw(ctx);
-            drawEnemies();
-            drawBullets();
-            drawEffects();
-            drawPlayerDamage();
-            drawGameTime(ctx);
-            drawGameState(ctx);
-        }
-        var intervalId = null;
-        function pauseGame(){
-            if(gameState == GAMESTATE.PLAYING){
-                if(intervalId !== null){
-                    stopTimer();
-                }
-                else{
-                    startTimer();
-                }
-            }
-        }
-        function startTimer(){
-            if(intervalId === null){
-                intervalId = setInterval(onFrame, TIMER_PERIOD);
-            }
-        }
-        function stopTimer(){
-            if(intervalId !== null){
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-        }
-        startTimer();
 
         return div;
     };
