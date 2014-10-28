@@ -53,8 +53,8 @@
             var keyRightState = false;
             this.fetchKeyState = fetchKeyState;
             function fetchKeyState(){
-                self.keyLeft = keyLeftState || keyLeftEdge || touchLeftState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x > 2.0);
-                self.keyRight = keyRightState || keyRightEdge || touchRightState || (deviceMotionEvent && deviceMotionEvent.accelerationIncludingGravity.x < -2.0);
+                self.keyLeft = keyLeftState || keyLeftEdge || touchLeftState || (deviceLeftRightTilt > 12.0);
+                self.keyRight = keyRightState || keyRightEdge || touchRightState || (deviceLeftRightTilt < -12.0);
                 keyLeftEdge = touchLeftEdge =
                     keyRightEdge = touchRightEdge = false;
             }
@@ -117,10 +117,22 @@
                 e.preventDefault();
             }, false);
 
-            var deviceMotionEvent = null;
-            window.addEventListener("devicemotion", function(e){
-                deviceMotionEvent = e;
-            }, false);
+            var deviceLeftRightTilt = 0;
+            if(screen && screen.orientation && typeof(screen.orientation.angle) == "number"){
+                function getLeftRightTiltAngle(ev){
+                    // r = rotz(alpha)*rotx(beta)*roty(gamma)*rotz(-screen.orientation.angle)*rowvec[1,0,0]
+                    // tilt = sin^-1(r.z)
+                    function rad(deg){return deg*(Math.PI/180);}
+                    var b = rad(ev.beta);
+                    var c = rad(ev.gamma);
+                    var d = rad(-screen.orientation.angle);
+                    var rz = Math.sin(b)*Math.sin(d)-Math.cos(b)*Math.sin(c)*Math.cos(d);
+                    return Math.asin(rz)*(180/Math.PI);
+                }
+                window.addEventListener("deviceorientation", function(e){
+                    deviceLeftRightTilt = getLeftRightTiltAngle(e);
+                }, false);
+            }
         }
 
         //
