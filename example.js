@@ -120,7 +120,7 @@
             var deviceLeftRightTilt = 0;
             if(screen && screen.orientation && typeof(screen.orientation.angle) == "number"){
                 function getLeftRightTiltAngle(ev){
-                    // r = rotz(alpha)*rotx(beta)*roty(gamma)*rotz(-screen.orientation.angle)*rowvec[1,0,0]
+                    // r = rotz(alpha)*rotx(beta)*roty(gamma)*rotz(-screen.orientation.angle)*colvec[1,0,0]
                     // tilt = sin^-1(r.z)
                     function rad(deg){return deg*(Math.PI/180);}
                     var b = rad(ev.beta);
