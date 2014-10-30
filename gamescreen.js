@@ -49,6 +49,12 @@
         window.addEventListener("resize", onResize, false);
         window.addEventListener("orientationchange", onResize, false);
         screenArea.addEventListener("resize", onResize, false); //Chromeにおいて、翻訳バーや開発者用バーが消えるときにwindowのresizeイベントが発生しないので、screenAreaのresizeで代用する。
+        // リサイズイベントが発生せずにフルスクリーンになることもあるので注意。
+        // 全画面化前後でウィンドウのサイズが変わらない場合。
+        document.addEventListener("fullscreenchange", onResize, false);
+        document.addEventListener("mozfullscreenchange", onResize, false);
+        document.addEventListener("webkitfullscreenchange", onResize, false);
+        document.addEventListener("msfullscreenchange", onResize, false);
 
         // Update style
         onResize();
