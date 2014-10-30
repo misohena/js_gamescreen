@@ -256,6 +256,7 @@
         button.style.color = "black";
         button.style.background = "white";
         button.style.margin = "-"+BTN_H/2+"px 0 0 -"+BTN_W/2+"px";
+        button.style.border = "1px solid black";
         button.style.borderRadius = "16px";
         button.style.userSelect =
             button.style.msUserSelect =
